@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Shortener</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-box {
+      max-width: 600px;
+      margin: auto;
+      display: flex;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 18px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    table {
+      width: 100%;
+      background: #fff;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔗 URL Shortener Dashboard</h1>
+
+  <!-- ADD URL -->
+  <form class="form-box" action="/url" method="POST">
+    <input
+      type="text"
+      name="url"
+      placeholder="Enter long URL"
+      required
+    />
+    <button type="submit">Generate</button>
+  </form>
+
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Short URL</th>
+        <th>Original URL</th>
+        <th>Total Clicks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (urls.length === 0) { %>
+        <tr>
+          <td colspan="4">No URLs created yet</td>
+        </tr>
+      <% } else { %>
+        <% urls.forEach((url, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+
+            <td>
+              <a href="/<%= url.shortId %>" target="_blank">
+                <%= host %>/<%= url.shortId %>
+              </a>
+            </td>
+
+            <td><%= url.redirectURL %></td>
+
+            <td><%= url.visitHistory.length %></td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
+
+</body>
+</html>
