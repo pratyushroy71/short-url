@@ -6,72 +6,135 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Inter, Arial, sans-serif;
       background: #f4f6f8;
-      padding: 30px;
+      padding: 40px;
+      color: #1f2937;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .form-box {
-      max-width: 600px;
-      margin: auto;
-      display: flex;
-      gap: 10px;
       margin-bottom: 40px;
+      font-weight: 600;
     }
 
-    input {
+    /* INPUT CARD */
+    .shortener-card {
+      max-width: 760px;
+      margin: auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-row input {
       flex: 1;
-      padding: 12px;
+      padding: 14px 16px;
       font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      outline: none;
     }
 
-    button {
-      padding: 12px 18px;
+    .input-row button {
+      padding: 14px 22px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
       cursor: pointer;
-      font-size: 16px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 500;
     }
 
+    .input-row button:hover {
+      background: #1d4ed8;
+    }
+
+    /* RESULT CARD */
+    .result {
+      margin-top: 20px;
+    }
+
+    .result-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+
+    .result-card a {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .result-card button {
+      border: none;
+      background: #e5e7eb;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* TABLE */
     table {
+      margin-top: 50px;
       width: 100%;
       background: #fff;
       border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.04);
     }
 
     th, td {
-      padding: 12px;
-      border: 1px solid #ddd;
+      padding: 14px;
+      border-bottom: 1px solid #e5e7eb;
       text-align: left;
     }
 
     th {
-      background: #f0f0f0;
+      background: #f9fafb;
+      font-weight: 600;
     }
 
-    a {
-      color: #007bff;
+    table a {
+      color: #2563eb;
       text-decoration: none;
+    }
+
+    .center {
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h1>🔗 URL Shortener Dashboard</h1>
+  <h1>🔗 URL Shortener</h1>
 
-  <!-- ADD URL -->
-  <form class="form-box" action="/url" method="POST">
-    <input
-      type="text"
-      name="url"
-      placeholder="Enter long URL"
-      required
-    />
-    <button type="submit">Generate</button>
-  </form>
+  <!-- SHORTENER -->
+  <div class="shortener-card">
+    <div class="input-row">
+      <input
+        type="text"
+        id="urlInput"
+        placeholder="Paste your long URL here"
+      />
+      <button onclick="generateUrl()">Shorten</button>
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
 
   <!-- TABLE -->
   <table>
@@ -80,33 +143,70 @@
         <th>#</th>
         <th>Short URL</th>
         <th>Original URL</th>
-        <th>Total Clicks</th>
+        <th>Clicks</th>
       </tr>
     </thead>
     <tbody>
       <% if (urls.length === 0) { %>
         <tr>
-          <td colspan="4">No URLs created yet</td>
+          <td colspan="4" class="center">No URLs created yet</td>
         </tr>
       <% } else { %>
         <% urls.forEach((url, index) => { %>
           <tr>
             <td><%= index + 1 %></td>
-
             <td>
               <a href="/<%= url.shortId %>" target="_blank">
                 <%= host %>/<%= url.shortId %>
               </a>
             </td>
-
             <td><%= url.redirectURL %></td>
-
             <td><%= url.visitHistory.length %></td>
           </tr>
         <% }) %>
       <% } %>
     </tbody>
   </table>
+
+  <!-- SCRIPT -->
+  <script>
+    async function generateUrl() {
+      const input = document.getElementById('urlInput');
+      const result = document.getElementById('result');
+      const url = input.value.trim();
+
+      if (!url) {
+        result.innerHTML = '<p style="color:red">URL is required</p>';
+        return;
+      }
+
+      const res = await fetch('/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        result.innerHTML = `<p style="color:red">${data.error}</p>`;
+        return;
+      }
+
+      const shortLink = `${location.origin}/${data.shortId}`;
+
+      result.innerHTML = `
+        <div class="result-card">
+          <a href="${shortLink}" target="_blank">${shortLink}</a>
+          <button onclick="navigator.clipboard.writeText('${shortLink}')">
+            Copy
+          </button>
+        </div>
+      `;
+
+      input.value = '';
+    }
+  </script>
 
 </body>
 </html>
